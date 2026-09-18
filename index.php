@@ -13,26 +13,41 @@ header('Cache-Control: no-store');
       font-family: "BO NX Frame";
       src: url("font/BONX-Frame.otf") format("opentype");
       font-display: block;
+      ascent-override: 80%;
+      descent-override: 20%;
+      line-gap-override: 0%;
     }
     @font-face {
       font-family: "BO NX Medium";
       src: url("font/BONX-Medium.otf") format("opentype");
       font-display: block;
+      ascent-override: 80%;
+      descent-override: 20%;
+      line-gap-override: 0%;
     }
     @font-face {
       font-family: "BO NX Silhouette";
       src: url("font/BONX-Silhouette.otf") format("opentype");
       font-display: block;
+      ascent-override: 80%;
+      descent-override: 20%;
+      line-gap-override: 0%;
     }
     @font-face {
       font-family: "BO NX Tube Medium";
       src: url("font/BONX-TubeMedium.otf") format("opentype");
       font-display: block;
+      ascent-override: 80%;
+      descent-override: 20%;
+      line-gap-override: 0%;
     }
     @font-face {
       font-family: "BO NX Tube Medium Reverse";
       src: url("font/BONX-TubeMediumReverse.otf") format("opentype");
       font-display: block;
+      ascent-override: 80%;
+      descent-override: 20%;
+      line-gap-override: 0%;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -72,34 +87,60 @@ header('Cache-Control: no-store');
       font-size: 120px;
       line-height: 1;
       filter:
-        drop-shadow(0 0 10px rgba(255, 110, 20, 0.45))
-        drop-shadow(0 0 28px rgba(255, 70, 0, 0.28));
+        drop-shadow(0 0 6px rgba(255, 110, 20, 0.28))
+        drop-shadow(0 0 18px rgba(255, 70, 0, 0.16));
     }
 
-    /* Frame/Medium/Silhouette は全て advance 520/1000em。左揃えで原点を一致させる */
+    /* Tube系 advance 760、数字系 520。管の中心380と数字の中心260を合わせるため数字を +0.12em */
     .tube {
       position: relative;
-      width: 0.52em;
+      width: 0.76em;
       height: 1.7em;
+      overflow: visible;
       font-kerning: none;
       font-variant-ligatures: none;
     }
 
     .layer {
       position: absolute;
-      left: 0;
-      bottom: 0.2em;
-      width: 0.52em;
+      bottom: 0.25em;
       height: 1em;
       line-height: 1;
       text-align: left;
       font-size: 1em;
+      white-space: pre;
+    }
+
+    .glass,
+    .glass-rev {
+      left: 0;
+      width: 0.76em;
+    }
+
+    .bloom,
+    .silhouette,
+    .medium,
+    .frame {
+      left: 0.12em;
+      width: 0.52em;
+    }
+
+    .glass-rev {
+      font-family: "BO NX Tube Medium Reverse", sans-serif;
+      color: rgba(255, 120, 40, 0.10);
+      z-index: 1;
+    }
+
+    .glass {
+      font-family: "BO NX Tube Medium", sans-serif;
+      color: rgba(255, 176, 88, 0.28);
+      z-index: 2;
     }
 
     .bloom {
       font-family: "BO NX Medium", sans-serif;
       color: #ff7a18;
-      z-index: 1;
+      z-index: 3;
       filter: blur(16px);
       opacity: 0.5;
       pointer-events: none;
@@ -108,14 +149,14 @@ header('Cache-Control: no-store');
     .silhouette {
       font-family: "BO NX Silhouette", sans-serif;
       color: #3a1806;
-      z-index: 2;
+      z-index: 4;
       transform: translateY(-0.013em);
     }
 
     .medium {
       font-family: "BO NX Medium", sans-serif;
       color: #ff861c;
-      z-index: 3;
+      z-index: 5;
       text-shadow:
         0 0 6px #ffb24a,
         0 0 14px #ff6a00,
@@ -125,8 +166,8 @@ header('Cache-Control: no-store');
 
     .frame {
       font-family: "BO NX Frame", sans-serif;
-      color: rgba(255, 176, 88, 0.34);
-      z-index: 4;
+      color: rgba(255, 176, 88, 0.16);
+      z-index: 6;
     }
 
     .tube.sep .silhouette,
@@ -284,6 +325,8 @@ header('Cache-Control: no-store');
     }
 
     function setSlot(slot, ch) {
+      slot.glass.textContent = ' ';
+      slot.glassRev.textContent = ' ';
       slot.bloom.textContent = ch;
       slot.sil.textContent = '0';
       slot.medium.textContent = ch;
@@ -305,11 +348,15 @@ header('Cache-Control: no-store');
         const tube = document.createElement('div');
         tube.className = 'tube' + (ch === '•' ? ' sep' : '');
 
+        const glassRev = makeLayer('glass-rev', ' ');
+        const glass = makeLayer('glass', ' ');
         const bloom = makeLayer('bloom', ch);
         const sil = makeLayer('silhouette', '0');
         const medium = makeLayer('medium', ch);
         const frame = makeLayer('frame', ch);
 
+        tube.appendChild(glassRev);
+        tube.appendChild(glass);
         tube.appendChild(bloom);
         tube.appendChild(sil);
         tube.appendChild(medium);
@@ -318,6 +365,8 @@ header('Cache-Control: no-store');
 
         slots.push({
           tube: tube,
+          glass: glass,
+          glassRev: glassRev,
           bloom: bloom,
           sil: sil,
           medium: medium,
