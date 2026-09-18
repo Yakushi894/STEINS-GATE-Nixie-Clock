@@ -40,8 +40,14 @@ header('Cache-Control: no-store');
     html, body {
       width: 100%;
       height: 100%;
-      background: #000;
       overflow: hidden;
+      background-color: #070300;
+      background-image:
+        linear-gradient(rgba(255, 120, 40, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 120, 40, 0.045) 1px, transparent 1px),
+        radial-gradient(ellipse at center, rgba(40, 12, 0, 0.35) 0%, rgba(0, 0, 0, 0.88) 72%);
+      background-size: 28px 28px, 28px 28px, 100% 100%;
+      background-position: center center, center center, center;
     }
 
     body {
@@ -60,84 +66,86 @@ header('Cache-Control: no-store');
 
     .tubes {
       display: flex;
-      align-items: center;
+      align-items: flex-end;
       justify-content: center;
       transform-origin: center center;
-      font-size: 100px;
-      line-height: 1.7;
+      font-size: 120px;
+      line-height: 1;
+      filter:
+        drop-shadow(0 0 10px rgba(255, 110, 20, 0.45))
+        drop-shadow(0 0 28px rgba(255, 70, 0, 0.28));
     }
 
+    /* Frame/Medium/Silhouette は全て advance 520/1000em。左揃えで原点を一致させる */
     .tube {
-      display: grid;
-      grid-template: 1.7em / 1.05em;
-      width: 1.05em;
+      position: relative;
+      width: 0.52em;
       height: 1.7em;
-      line-height: 1.7;
       font-kerning: none;
       font-variant-ligatures: none;
     }
 
     .layer {
-      grid-area: 1 / 1;
-      width: 1.05em;
-      height: 1.7em;
-      line-height: 1.7;
-      text-align: center;
-      overflow: hidden;
+      position: absolute;
+      left: 0;
+      bottom: 0.2em;
+      width: 0.52em;
+      height: 1em;
+      line-height: 1;
+      text-align: left;
+      font-size: 1em;
+    }
+
+    .bloom {
+      font-family: "BO NX Medium", sans-serif;
+      color: #ff7a18;
+      z-index: 1;
+      filter: blur(16px);
+      opacity: 0.5;
+      pointer-events: none;
     }
 
     .silhouette {
       font-family: "BO NX Silhouette", sans-serif;
-      color: #2a1204;
-      z-index: 1;
-    }
-
-    .tube-rev {
-      font-family: "BO NX Tube Medium Reverse", sans-serif;
-      color: rgba(255, 90, 10, 0.16);
+      color: #3a1806;
       z-index: 2;
+      transform: translateY(-0.013em);
     }
 
     .medium {
       font-family: "BO NX Medium", sans-serif;
-      color: #ff7a18;
+      color: #ff861c;
       z-index: 3;
       text-shadow:
-        0 0 4px #ff9a30,
-        0 0 10px #ff6a00,
-        0 0 22px #ff4500,
-        0 0 44px #cc3300;
-    }
-
-    .tube-body {
-      font-family: "BO NX Tube Medium", sans-serif;
-      color: rgba(255, 186, 96, 0.5);
-      z-index: 4;
+        0 0 6px #ffb24a,
+        0 0 14px #ff6a00,
+        0 0 28px #ff4500,
+        0 0 56px rgba(204, 51, 0, 0.8);
     }
 
     .frame {
       font-family: "BO NX Frame", sans-serif;
-      color: rgba(255, 170, 80, 0.3);
-      z-index: 5;
+      color: rgba(255, 176, 88, 0.34);
+      z-index: 4;
     }
 
     .tube.sep .silhouette,
-    .tube.sep .tube-rev {
+    .tube.sep .bloom {
       visibility: hidden;
     }
 
     .tube.spinning .medium {
-      color: #ffb060;
-      text-shadow: 0 0 3px #ffcc88, 0 0 8px #ff6a00, 0 0 18px #ff4500;
+      color: #ffc070;
     }
 
-    .tube.locking .medium {
-      animation: lockFlash 0.18s ease-out;
+    .tube.locking .medium,
+    .tube.locking .bloom {
+      animation: lockFlash 0.2s ease-out;
     }
 
     @keyframes lockFlash {
-      0%   { color: #fff4d0; text-shadow: 0 0 8px #fff, 0 0 24px #ffaa44, 0 0 48px #ff6600; }
-      100% { color: #ff7a18; }
+      0%   { color: #fff3d0; filter: blur(8px); }
+      100% { color: #ff861c; }
     }
 
     .hint {
@@ -148,7 +156,7 @@ header('Cache-Control: no-store');
       text-align: center;
       font-family: sans-serif;
       font-size: 11px;
-      color: #4a3300;
+      color: #5a3a10;
       line-height: 1.7;
     }
     .hint button {
@@ -276,10 +284,9 @@ header('Cache-Control: no-store');
     }
 
     function setSlot(slot, ch) {
-      slot.sil.textContent = ch;
-      slot.tubeRev.textContent = ch;
+      slot.bloom.textContent = ch;
+      slot.sil.textContent = '0';
       slot.medium.textContent = ch;
-      slot.tubeBody.textContent = ch;
       slot.frame.textContent = ch;
     }
 
@@ -298,25 +305,22 @@ header('Cache-Control: no-store');
         const tube = document.createElement('div');
         tube.className = 'tube' + (ch === '•' ? ' sep' : '');
 
-        const sil = makeLayer('silhouette', ch);
-        const tubeRev = makeLayer('tube-rev', ch);
+        const bloom = makeLayer('bloom', ch);
+        const sil = makeLayer('silhouette', '0');
         const medium = makeLayer('medium', ch);
-        const tubeBody = makeLayer('tube-body', ch);
         const frame = makeLayer('frame', ch);
 
+        tube.appendChild(bloom);
         tube.appendChild(sil);
-        tube.appendChild(tubeRev);
         tube.appendChild(medium);
-        tube.appendChild(tubeBody);
         tube.appendChild(frame);
         tubesEl.appendChild(tube);
 
         slots.push({
           tube: tube,
+          bloom: bloom,
           sil: sil,
-          tubeRev: tubeRev,
           medium: medium,
-          tubeBody: tubeBody,
           frame: frame,
           locked: false,
           isSep: ch === '•'
@@ -339,7 +343,7 @@ header('Cache-Control: no-store');
       const meter = tubesEl.getBoundingClientRect();
       if (!meter.width || !meter.height) return;
       const scale = Math.min(box.width / meter.width, box.height / meter.height);
-      tubesEl.style.transform = 'scale(' + (scale * 0.96) + ')';
+      tubesEl.style.transform = 'scale(' + (scale * 0.92) + ')';
     }
 
     function startClock() {
@@ -423,6 +427,7 @@ header('Cache-Control: no-store');
       rollTo(formatTime());
       startClock();
       requestAnimationFrame(fitToPage);
+      setTimeout(fitToPage, 80);
       setInterval(syncNtp, 10 * 60 * 1000);
     })();
   </script>
